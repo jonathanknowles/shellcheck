@@ -309,7 +309,7 @@ removeUnnecessaryStructuralNodes (nodes, edges, mapping, association) =
         a `S.member` candidateNodes && b `S.member` candidateNodes
 
     orderEdge (a,b,_) = if a < b then (b,a) else (a,b)
-    counter = MM.fromList . map (\key -> (key, Sum 1))
+    counter = foldr (MM.adjust (+ Sum 1)) MM.empty
     isRegularEdge (_, _, CFEFlow) = True
     isRegularEdge _ = False
 
