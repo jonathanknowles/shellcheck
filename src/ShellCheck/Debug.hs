@@ -93,6 +93,7 @@ import Data.Graph.Inductive.Graph as G
 import Data.List
 import Data.Maybe
 import qualified Data.Map as M
+import qualified Data.MonoidMap as MM
 import qualified Data.Set as S
 
 
@@ -204,15 +205,15 @@ stringToDetailedCfgViz scriptString = cfgToGraphVizWith nodeLabel graph
     idToNode :: M.Map Id (Node, Node)
     idToNode = cfIdToRange cfgResult
 
-    nodeToStartIds :: M.Map Node (S.Set Id)
+    nodeToStartIds :: MM.MonoidMap Node (S.Set Id)
     nodeToStartIds =
-        M.fromListWith S.union $
+        MM.fromList $
             map (\(id, (start, _)) -> (start, S.singleton id)) $
                 M.toList idToNode
 
-    nodeToEndIds :: M.Map Node (S.Set Id)
+    nodeToEndIds :: MM.MonoidMap Node (S.Set Id)
     nodeToEndIds =
-        M.fromListWith S.union $
+        MM.fromList $
             map (\(id, (_, end)) -> (end, S.singleton id)) $
                 M.toList idToNode
 
@@ -229,8 +230,8 @@ stringToDetailedCfgViz scriptString = cfgToGraphVizWith nodeLabel graph
 
     nodeLabel (node, label) = unlines [
         show node ++ ". " ++ show label,
-        "Begin: " ++ formatGroup (M.findWithDefault S.empty node nodeToStartIds),
-        "End: " ++ formatGroup (M.findWithDefault S.empty node nodeToEndIds)
+        "Begin: " ++ formatGroup (MM.get node nodeToStartIds),
+        "End: " ++ formatGroup (MM.get node nodeToEndIds)
         ]
 
 
