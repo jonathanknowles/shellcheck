@@ -428,7 +428,7 @@ data Ctx s = Ctx {
     -- An incrementing counter to version maps
     cCounter :: STRef s Integer,
     -- A cache of input state dependencies to output effects
-    cCache :: STRef s (M.Map Node [(S.Set StateDependency, InternalState)]),
+    cCache :: STRef s (MM.MonoidMap Node [(S.Set StateDependency, InternalState)]),
     -- Whether the cache is enabled (see fallbackThreshold)
     cEnableCache :: STRef s Bool,
     -- The states resulting from data flows per invocation path
@@ -885,7 +885,7 @@ newCtx g = do
     input <- newSTRef undefined
     output <- newSTRef undefined
     node <- newSTRef undefined
-    cache <- newSTRef M.empty
+    cache <- newSTRef MM.empty
     enableCache <- newSTRef True
     invocations <- newSTRef M.empty
     return $ Ctx {
@@ -1076,7 +1076,7 @@ runCached ctx node f = do
         Nothing -> do
             logInfo ("Cache failed", node)
             (deps, diff) <- f ctx
-            modifySTRef (cCache ctx) (M.insertWith (\_ old -> (deps, diff):(take cacheEntries old)) node [(deps,diff)])
+            modifySTRef (cCache ctx) (MM.adjust (\old -> (deps, diff):take cacheEntries old) node)
             logVerbose ("Recomputed cache for", node, deps)
             -- do { f <- fulfillsDependencies ctx node deps; unless (f) $ traceShowM ("New dependencies FAILED to match", node, deps); }
             patchOutputM ctx diff
@@ -1086,9 +1086,9 @@ getCache :: forall s. Ctx s -> Node -> ST s (Maybe InternalState)
 getCache ctx node = do
     cache <- readSTRef $ cCache ctx
     enable <- readSTRef $ cEnableCache ctx
-    logVerbose ("Cache for", node, "length", length $ M.findWithDefault [] node cache, M.lookup node cache)
+    logVerbose ("Cache for", node, "length", length $ MM.get node cache, MM.get node cache)
     if enable
-        then f $ M.findWithDefault [] node cache
+        then f $ MM.get node cache
         else return Nothing
   where
     f [] = return Nothing
