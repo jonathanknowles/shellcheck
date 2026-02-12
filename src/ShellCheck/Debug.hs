@@ -207,15 +207,11 @@ stringToDetailedCfgViz scriptString = cfgToGraphVizWith nodeLabel graph
 
     nodeToStartIds :: MM.MonoidMap Node (S.Set Id)
     nodeToStartIds =
-        MM.fromList $
-            map (\(id, (start, _)) -> (start, S.singleton id)) $
-                M.toList idToNode
+        M.foldrWithKey' (\id -> MM.adjust (S.insert id) . fst) mempty idToNode
 
     nodeToEndIds :: MM.MonoidMap Node (S.Set Id)
     nodeToEndIds =
-        MM.fromList $
-            map (\(id, (_, end)) -> (end, S.singleton id)) $
-                M.toList idToNode
+        M.foldrWithKey' (\id -> MM.adjust (S.insert id) . snd) mempty idToNode
 
     formatId :: Id -> String
     formatId id = fromMaybe ("Unknown " ++ show id) $ do
