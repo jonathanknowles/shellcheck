@@ -55,6 +55,7 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.MonoidMap as MM
+import Data.Monoid (Sum(Sum))
 import qualified Data.Set as S
 import Control.Monad.RWS.Lazy
 import Data.Graph.Inductive.Graph
@@ -308,7 +309,7 @@ removeUnnecessaryStructuralNodes (nodes, edges, mapping, association) =
         a `S.member` candidateNodes && b `S.member` candidateNodes
 
     orderEdge (a,b,_) = if a < b then (b,a) else (a,b)
-    counter = M.fromListWith (+) . map (\key -> (key, 1))
+    counter = MM.fromList . map (\key -> (key, Sum 1))
     isRegularEdge (_, _, CFEFlow) = True
     isRegularEdge _ = False
 
@@ -319,8 +320,8 @@ removeUnnecessaryStructuralNodes (nodes, edges, mapping, association) =
             Just x -> recursiveLookup map x
 
     isLinear node =
-        M.findWithDefault 0 node inDegree == 1
-        && M.findWithDefault 0 node outDegree == 1
+        MM.get node inDegree == 1
+        && MM.get node outDegree == 1
 
 
 remapNode :: M.Map Node Node -> LNode CFNode -> LNode CFNode
