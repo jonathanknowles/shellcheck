@@ -77,6 +77,7 @@ import Data.STRef
 import Debug.Trace -- STRIP
 import GHC.Generics (Generic)
 import qualified Data.Map as M
+import qualified Data.MonoidMap as MM
 import qualified Data.Set as S
 import qualified ShellCheck.Data as Data
 import ShellCheck.AST
@@ -105,7 +106,7 @@ logInfo log = do
 data CFGAnalysis = CFGAnalysis {
     graph :: CFGraph,
     tokenToRange :: M.Map Id (Node, Node),
-    tokenToNodes :: M.Map Id (S.Set Node),
+    tokenToNodes :: MM.MonoidMap Id (S.Set Node),
     postDominators :: Array Node [Node],
     nodeToData :: M.Map Node (ProgramState, ProgramState)
 } deriving (Show)

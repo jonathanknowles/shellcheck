@@ -44,6 +44,7 @@ import qualified Data.Graph.Inductive.Graph as G
 import Data.List
 import Data.Maybe
 import qualified Data.List.NonEmpty as NE
+import qualified Data.MonoidMap as MM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Test.QuickCheck.All (forAllProperties)
@@ -1456,7 +1457,7 @@ checkBackreferencingDeclaration cmd = CommandCheck (Exactly cmd) check
     findReferences cfga list = do
         let graph = CF.graph cfga
         let nodesMap = CF.tokenToNodes cfga
-        let nodes = S.unions $ map (\id -> M.findWithDefault S.empty id nodesMap) $ map getId $ list
+        let nodes = S.unions $ map (\id -> MM.get id nodesMap) $ map getId $ list
         let labels = mapMaybe (G.lab graph) $ S.toList nodes
         let references = M.fromList $ concatMap refFromLabel labels
         return references

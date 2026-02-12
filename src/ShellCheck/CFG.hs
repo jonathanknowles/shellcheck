@@ -54,6 +54,7 @@ import Data.List hiding (map)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Map as M
+import qualified Data.MonoidMap as MM
 import qualified Data.Set as S
 import Control.Monad.RWS.Lazy
 import Data.Graph.Inductive.Graph
@@ -177,7 +178,7 @@ data CFGResult = CFGResult {
     -- Map from Id to nominal start&end node (i.e. assuming normal execution without exits)
     cfIdToRange :: M.Map Id (Node, Node),
     -- A set of all nodes belonging to an Id, recursively
-    cfIdToNodes :: M.Map Id (S.Set Node),
+    cfIdToNodes :: MM.MonoidMap Id (S.Set Node),
     -- An array (from,to) saying whether 'from' postdominates 'to'
     cfPostDominators :: Array Node [Node]
 }
@@ -200,7 +201,7 @@ buildGraph params root =
         result = CFGResult {
             cfGraph = mkGraph nodes edges,
             cfIdToRange = idToRange,
-            cfIdToNodes = M.fromListWith S.union $ map (\(id, n) -> (id, S.singleton n)) association,
+            cfIdToNodes = MM.fromList $ map (\(id, n) -> (id, S.singleton n)) association,
             cfPostDominators = findPostDominators mainExit $ mkGraph nodes onlyRealEdges
         }
     in
